@@ -2,7 +2,7 @@ import React,{Component} from 'react';
 import Web3 from 'web3'
 import './App.css';
 import {TODO_LIST_ADDRESS, TODO_LIST_ABI} from './config'
-
+import TodoList from './TodoList'
 class App extends Component{
 
   componentWillMount(){
@@ -27,6 +27,7 @@ class App extends Component{
       this.setState({
         tasks: [...this.state.tasks, duffa]
       })
+      this.setState({loading: false})
     }
     console.log("Tasks are here",this.state.tasks)
   }
@@ -39,24 +40,30 @@ class App extends Component{
       tasks: [],
       loading:true
     }
+    this.createTask = this.createTask.bind(this)
+  }
+  createTask(content){
+    this.setState({ loading : true})
+    this.state.todoList.methods.createTask(content).send({ from: this.state.account })
+    .once('receipt', (receipt) => {
+      this.setState({ loading: false })
+    })
+    
   }
 
   render(){
   return (
-  
-    <div className = "container">
-       <ul id="taskList" className="list-unstyled">
-        { this.state.tasks.map((task,key) => {
-          return(
-              <div className="taskTemplate" className="checkbox" key={key}>
-                <label>
-                  <input type="checkbox" />
-                  <span className="content">{task.description}</span>
-                </label>
-              </div>
-        )
-        })}
-       </ul>
+  <div>
+    <div className = "container-fluid">
+      <div className="row">
+        <main role="main" className="col-lg-12 d-flex justify-content-center">
+          {this.state.loading 
+            ? <div id="loader" className="text-center"><p className="text-center">Loading...</p></div> 
+            : <TodoList tasks={this.state.tasks} createTask={this.createTask}/> 
+          }
+        </main>
+      </div>
+    </div>
     </div>
   );
   }
